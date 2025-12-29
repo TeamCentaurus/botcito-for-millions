@@ -48,10 +48,10 @@ gcloud iam workload-identity-pools providers create-oidc "github-terraform-provi
   --workload-identity-pool="github-terraform-pool" \
   --display-name="Provider para pool de terraform" \
   --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
-  --attribute-condition="assertion.repository == 'RE-Vincent/botcito-para-ganar-millones'" \
+  --attribute-condition="assertion.repository == 'Leonel481/botcito-para-ganar-millones'" \
   --issuer-uri="https://token.actions.githubusercontent.com"
 ```
-5-
+5- Conectamos a la cuenta de servicio y le indicamos que el repositorio actue como dicha cuenta
 ```bash 
 # Obtener el ID completo del Pool
 export POOL_ID=$(gcloud iam workload-identity-pools describe "github-terraform-pool" --location="global" --format="value(name)")
@@ -60,5 +60,20 @@ export POOL_ID=$(gcloud iam workload-identity-pools describe "github-terraform-p
 gcloud iam service-accounts add-iam-policy-binding "terraform-runner@${PROJECT_ID}.iam.gserviceaccount.com" \
     --project="${PROJECT_ID}" \
     --role="roles/iam.workloadIdentityUser" \
-    --member="principalSet://iam.googleapis.com/${POOL_ID}/attribute.repository/RE-Vincent/botcito-para-ganar-millones"
+    --member="principalSet://iam.googleapis.com/${POOL_ID}/attribute.repository/Leonel481/botcito-para-ganar-millones"
+```
+6- Ubicamos la sección de "Workload Identity Pools" en la consola de GCP y copiamos el identificador del provider y en cuenta de servicios copiamos la cuenta que vinculamos en el paso anterior
+   para luego usarla en la configuracion del workflow de terraform en la sección del auth
+
+7-
+```bash 
+gcloud storage buckets create gs://gcs02-github-terraform-state-bucket \
+    --project=$PROJECT_ID \
+    --default-storage-class=STANDARD \
+    --location=us-central1 \
+    --uniform-bucket-level-access \
+    --soft-delete-duration=7d
+
+gcloud storage buckets update gs://gcs02-github-terraform-state-bucket \
+    --update-labels=env=prod,project=botcito,service=terraform-backend,owner=vincent_leonel
 ```
