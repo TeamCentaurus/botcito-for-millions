@@ -21,6 +21,11 @@ jobs:
     runs-on: ubuntu-24.04
     environment: production
 
+    # Definimos variables de entorno globales para los pasos de Terraform
+    env:
+      TF_IN_AUTOMATION: true
+      TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
+
     defaults:
       run:
         shell: bash
@@ -41,7 +46,6 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        # cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         terraform_wrapper: false
 
 
