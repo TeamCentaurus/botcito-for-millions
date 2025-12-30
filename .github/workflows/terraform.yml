@@ -1,0 +1,59 @@
+name: 'Terraform'
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'infra/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'infra/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: 'write'
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    environment: production
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - id: auth
+      uses: google-github-actions/auth@v2.0.0  
+      with:
+        workload_identity_provider: 'projects/91484429959/locations/global/workloadIdentityPools/github-terraform-pool/providers/github-terraform-provider'
+        service_account: 'terraform-runner@dauntless-drive-476417-a9.iam.gserviceaccount.com'
+
+
+          
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+
+    - name: Terraform Init
+      run: terraform init
+
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan -input=false
+
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
+      run: terraform apply -auto-approve -input=false
+
