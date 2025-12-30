@@ -18,7 +18,7 @@ permissions:
 jobs:
   terraform:
     name: 'Terraform'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
 
     defaults:
@@ -33,27 +33,34 @@ jobs:
     - id: auth
       uses: google-github-actions/auth@v2.0.0  
       with:
-        workload_identity_provider: 'projects/91484429959/locations/global/workloadIdentityPools/github-terraform-pool/providers/github-terraform-provider'
-        service_account: 'terraform-runner@dauntless-drive-476417-a9.iam.gserviceaccount.com'
+        workload_identity_provider: ${{ secrets.IDENTITY_PROVIDER }}
+        service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
 
           
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        # cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_wrapper: false
 
 
     - name: Terraform Init
-      run: terraform init
+      run: |
+        cd infra
+        terraform init
 
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
-      run: terraform plan -input=false
+      run: |
+        cd infra
+        terraform plan -input=false
 
 
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
-      run: terraform apply -auto-approve -input=false
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        cd infra
+        terraform apply -auto-approve -input=false
 
