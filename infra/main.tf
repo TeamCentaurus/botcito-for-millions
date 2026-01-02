@@ -5,7 +5,7 @@ resource "google_compute_instance" "instance-vm" {
 
     initialize_params {
       image = data.google_compute_image.ubuntu_latest.self_link
-      size  = 25
+      size  = 30
       type  = "pd-balanced"
     }
 
