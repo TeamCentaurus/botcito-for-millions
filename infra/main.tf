@@ -76,3 +76,17 @@ resource "google_compute_address" "internal_ip" {
   address_type = "INTERNAL"
   subnetwork  = "projects/${var.project_id}/regions/${var.region}/subnetworks/default"
 }
+
+resource "google_compute_firewall" "allow_airflow_minio" {
+  name = "allow-airflow-minio-restricted"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8080", "9000"]
+  }
+
+  target_tags = ["airflow-server"]
+
+  source_ranges = var.allowed_ips
+}

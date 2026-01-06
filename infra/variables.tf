@@ -27,3 +27,7 @@ variable "metadata_script" {
   type = string
   default = "initscript_chef.sh"
 }
+variable "allowed_ips" {
+  description = "List of allowed IP addresses"
+  type = list(string)
+}
