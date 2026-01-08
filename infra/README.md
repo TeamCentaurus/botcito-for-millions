@@ -77,6 +77,18 @@ gcloud storage buckets create gs://${PROJECT_ID}-gcs02-github-terraform-state-bu
 gcloud storage buckets update gs://${PROJECT_ID}-gcs02-github-terraform-state-bucket \
     --update-labels=env=prod,project=botcito,service=terraform-backend,owner=teamcentaurus
 ```
+8- Habilitamos las APIs
+```bash 
+gcloud services enable \
+  cloudresourcemanager.googleapis.com \
+  iam.googleapis.com \
+  iamcredentials.googleapis.com \
+  serviceusage.googleapis.com \
+  storage.googleapis.com \
+  compute.googleapis.com \
+  --project=$PROJECT_ID
+```
+
 8- Imprimos los valores de la cuenta de servicio y del provider, valores a actualizar en las secrets de gitactions
 ```bash 
 SERVICE_ACCOUNT=$(gcloud iam service-accounts list \
