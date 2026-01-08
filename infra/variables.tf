@@ -15,7 +15,7 @@ variable "zone" {
 variable "machine_type" {
   description = "Machine type"
   type = string
-  default = "e2-standard-4"
+  default = "e2-standard-2"
 }
 variable "environment" {
   description = "Environment (dev, prod, etc.)"
