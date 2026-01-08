@@ -86,7 +86,7 @@ SERVICE_ACCOUNT=$(gcloud iam service-accounts list \
 echo
 echo "========== Secrets para actualizar =========="
 echo "SERVICE_ACCOUNT     : $SERVICE_ACCOUNT"
-echo "IDENTITY_PROVIDER   : $POOL_ID"
+echo "IDENTITY_PROVIDER   : ${POOL_ID}/providers/github-terraform-provider"
 echo "============================================"
 echo
 ```
