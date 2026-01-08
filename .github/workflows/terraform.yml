@@ -25,7 +25,6 @@ jobs:
     env:
       TF_IN_AUTOMATION: true
       TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
-      TF_VAR_allowed_ips: ${{ vars.ALLOWED_IPS }}
 
     defaults:
       run:

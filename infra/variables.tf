@@ -27,7 +27,8 @@ variable "metadata_script" {
   type = string
   default = "initscript_chef.sh"
 }
-variable "allowed_ips" {
-  description = "List of allowed IP addresses"
+variable "iap_users" {
+  description = "List of allowed IAP users"
   type = list(string)
+  default = [ "rmorenocueva@gmail.com", "leonel.aliaga.v@gmail.com"]
 }

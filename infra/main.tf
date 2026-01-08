@@ -43,12 +43,7 @@ resource "google_compute_instance" "instance-vm" {
 
   service_account {
     email  = local.default_service_account_email # var.service_account_email
-    scopes = ["https://www.googleapis.com/auth/devstorage.read_only",
-              "https://www.googleapis.com/auth/logging.write",
-              "https://www.googleapis.com/auth/monitoring.write",
-              "https://www.googleapis.com/auth/service.management.readonly",
-              "https://www.googleapis.com/auth/servicecontrol",
-              "https://www.googleapis.com/auth/trace.append"]
+    scopes = ["cloud-platform"]
   }
 
   shielded_instance_config {
@@ -57,13 +52,11 @@ resource "google_compute_instance" "instance-vm" {
     enable_vtpm                 = true
   }
 
-  metadata = {
-    startup-script = file("${path.module}/${var.metadata_script}")
-  }
-
-  depends_on = [google_compute_address.external_ip, google_compute_address.internal_ip]
+  metadata_startup_script = file("${path.module}/${var.metadata_script}")
 
   tags = ["airflow-server", "http-server", "https-server"]
+
+  depends_on = [google_compute_address.external_ip, google_compute_address.internal_ip]
 }
 
 resource "google_compute_address" "external_ip" {
@@ -77,16 +70,30 @@ resource "google_compute_address" "internal_ip" {
   subnetwork  = "projects/${var.project_id}/regions/${var.region}/subnetworks/default"
 }
 
-resource "google_compute_firewall" "allow_airflow_minio" {
-  name = "allow-airflow-minio-restricted"
+resource "google_compute_firewall" "allow_iap_proxy" {
+  name = "allow-ssh-and-apps-from-iap"
   network = "default"
 
   allow {
     protocol = "tcp"
-    ports    = ["8080", "9000"]
+    ports    = ["22", "8080", "9000"]
   }
 
-  target_tags = ["airflow-server"]
+  source_ranges = ["35.235.240.0/20"] # Google Cloud IP range
 
-  source_ranges = var.allowed_ips
+  target_tags = ["airflow-server"]
+}
+
+resource "google_project_iam_member" "iap_tunnel_accessor" {
+  for_each = toset(var.iap_users)
+  project = var.project_id
+  role    = "roles/iap.tunnelResourceAccessor"
+  member  = "user:${each.value}"
+}
+
+resource "google_service_account_iam_member" "allow_self_impersonate" {
+  for_each = toset(var.iap_users)
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${local.default_service_account_email}"
+  role            = "roles/iam.serviceAccountUser"
+  member          = "user:${each.value}"
 }

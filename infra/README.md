@@ -65,15 +65,28 @@ gcloud iam service-accounts add-iam-policy-binding "terraform-runner@${PROJECT_I
 6- Ubicamos la sección de "Workload Identity Pools" en la consola de GCP y copiamos el identificador del provider y en cuenta de servicios copiamos la cuenta que vinculamos en el paso anterior
    para luego usarla en la configuracion del workflow de terraform en la sección del auth
 
-7-
+7- Creamos y asignamos las etiquetas al bucket que terraform utilizara para guardar y no perder su estado
 ```bash 
-gcloud storage buckets create gs://gcs02-github-terraform-state-bucket \
+gcloud storage buckets create gs://${PROJECT_ID}-gcs02-github-terraform-state-bucket \
     --project=$PROJECT_ID \
     --default-storage-class=STANDARD \
     --location=us-central1 \
     --uniform-bucket-level-access \
     --soft-delete-duration=7d
 
-gcloud storage buckets update gs://gcs02-github-terraform-state-bucket \
+gcloud storage buckets update gs://${PROJECT_ID}-gcs02-github-terraform-state-bucket \
     --update-labels=env=prod,project=botcito,service=terraform-backend,owner=teamcentaurus
+```
+8- Imprimos los valores de la cuenta de servicio y del provider, valores a actualizar en las secrets de gitactions
+```bash 
+SERVICE_ACCOUNT=$(gcloud iam service-accounts list \
+  --project="$PROJECT_ID" \
+  --filter="displayName=terraform-runner" \
+  --format="value(email)")
+echo
+echo "========== Secrets para actualizar =========="
+echo "SERVICE_ACCOUNT     : $SERVICE_ACCOUNT"
+echo "IDENTITY_PROVIDER   : $POOL_ID"
+echo "============================================"
+echo
 ```
