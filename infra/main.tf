@@ -76,7 +76,7 @@ resource "google_compute_firewall" "allow_iap_proxy" {
 
   allow {
     protocol = "tcp"
-    ports    = ["22", "8080", "9000"]
+    ports    = ["22", "8080", "9000", "9001"]
   }
 
   source_ranges = ["35.235.240.0/20"] # Google Cloud IP range
