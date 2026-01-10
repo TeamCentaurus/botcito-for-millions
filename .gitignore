@@ -8,3 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Secretos
+.env
+
+# Docker Data (No queremos subir las DBs ni los parquets al repo)
+postgres_data/
+minio_data/
