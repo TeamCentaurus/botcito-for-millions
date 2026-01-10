@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: airflow-db
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  storage-minio:
+    image: minio/minio:latest
+    container_name: storage-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ADMIN_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ADMIN_PASSWORD}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
+    container_name: airflow-webserver
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW_FERNET_KEY}
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - MINIO_ENDPOINT=http://storage-minio:9000
+      - MINIO_USER=${MINIO_ADMIN_USER}
+      - MINIO_PASSWORD=${MINIO_ADMIN_PASSWORD}
+      - PYTHONPATH=/opt/airflow/plugins
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./src:/opt/airflow/plugins/src # <--- Importarás como: from src.bot_core...
+    command: webserver
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
+    container_name: airflow-scheduler
+    depends_on:
+      - postgres
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW_FERNET_KEY}
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - MINIO_ENDPOINT=http://storage-minio:9000
+      - MINIO_USER=${MINIO_ADMIN_USER}
+      - MINIO_PASSWORD=${MINIO_ADMIN_PASSWORD}
+      - PYTHONPATH=/opt/airflow/plugins
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./src:/opt/airflow/plugins/src
+    command: scheduler
+
+volumes:
+  postgres_data:
+  minio_data:
+  postgres_data:
+  minio_data:
