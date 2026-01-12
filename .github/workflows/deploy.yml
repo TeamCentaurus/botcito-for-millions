@@ -1,0 +1,58 @@
+name: "Bot Smart Deploy"
+
+on:
+  workflow_run:
+    workflows: ["Infrastructure Deployment"]
+    types: [completed]
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    if: >
+      github.event.workflow_run.conclusion == 'success' || 
+      (github.event_name == 'push' && github.event.workflow_run == null)
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Necesitamos comparar con el commit anterior
+
+      - name: Sync Repository on VM
+        run: |
+          echo "Sincronizando archivos en la VM..."
+          cd /opt/botcito
+          # Forzamos el pull para asegurar que la VM esté idéntica al repo
+          git fetch origin main
+          git reset --hard origin/main 
+          sudo chown -R :botcito-devs .
+          sudo chmod -R 775 .
+
+      - name: Analyze Changes and Deploy
+        run: |
+          cd /opt/botcito
+          
+          # 1. ¿Es la primera vez? (Verificamos si hay contenedores corriendo)
+          RUNNING_CONTAINERS=$(docker compose ps -q)
+          
+          # 2. ¿Hubo cambios en archivos base?
+          # Comparamos el commit actual contra el anterior
+          CRITICAL_CHANGES=$(git diff --name-only HEAD^ HEAD | grep -E 'docker/|src/|pyproject.toml|uv.lock|docker-compose.yml' || true)
+          
+          if [ -z "$RUNNING_CONTAINERS" ]; then
+            echo "PRIMER LEVANTAMIENTO: Iniciando todo desde cero..."
+            docker compose up -d --build
+          elif [ -n "$CRITICAL_CHANGES" ]; then
+            echo "CAMBIOS CRÍTICOS DETECTADOS: Reconstruyendo imágenes..."
+            docker compose up -d --build
+          else
+            echo "CAMBIOS MENORES: Actualizando sin reiniciar servicios..."
+            # Esto solo actualizará si cambió algo en el docker-compose.yml 
+            # de lo contrario, no hará nada (los DAGs se actualizan por volumen)
+            docker compose up -d
+          fi
+
+      - name: Cleanup
+        run: docker image prune -f
