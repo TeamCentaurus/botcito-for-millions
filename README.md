@@ -69,6 +69,8 @@ sudo chown -R :botcito-devs /opt/botcito
 sudo chmod -R 775 /opt/botcito
 # Cambiamos el grupo primario de la sesion en curso
 newgrp botcito-devs
+# Declaramos la carpeta  como segura
+git config --global --add safe.directory /opt/botcito
 
 # Settings -> Actions -> Runners -> New self-hosted runner
 # Seguimos las instrucciones de instalación
