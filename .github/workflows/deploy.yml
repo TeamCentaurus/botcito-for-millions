@@ -22,11 +22,16 @@ jobs:
 
       - name: Sync Repository on VM
         run: |
-          echo "Sincronizando archivos en la VM..."
+          echo "Configurando directorio seguro..."
+          # Esto evita el error de 'dubious ownership'
+          git config --global --add safe.directory /opt/botcito
+          
+          echo "Sincronizando archivos..."
           cd /opt/botcito
-          # Forzamos el pull para asegurar que la VM esté idéntica al repo
-          git fetch origin main
-          git reset --hard origin/main 
+          sudo git fetch origin main
+          sudo git reset --hard origin/main 
+          
+          echo "Ajustando permisos de grupo..."
           sudo chown -R :botcito-devs .
           sudo chmod -R 775 .
 
