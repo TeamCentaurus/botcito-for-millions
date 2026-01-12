@@ -75,6 +75,13 @@ newgrp botcito-devs
 # Después del ./run.sh ejecutamos lo siguiente para que el CI/CD se levante solo despues de un mantenimieto
 sudo ./svc.sh install
 sudo ./svc.sh start
+# Verificamos el estado
+sudo ./svc.sh status
+# Si no esta activo
+cd ~/actions-runner
+sudo ./svc.sh install
+sudo ./svc.sh start
+sudo ./svc.sh status
 
 # Creamos el archivo .env con las variables necesarias
 cd /opt/botcito
