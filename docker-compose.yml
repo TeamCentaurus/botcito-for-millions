@@ -42,6 +42,7 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
       - ./src:/opt/airflow/plugins/src # <--- Importarás como: from src.bot_core...
     command: webserver
 
@@ -63,6 +64,7 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
       - ./src:/opt/airflow/plugins/src
     command: scheduler
 
