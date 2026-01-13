@@ -60,7 +60,8 @@ jobs:
 
       - name: Verify Deployment
         run: |
-          sudo docker-compose ps
+          cd /opt/botcito
+          sudo docker-compose --env-file .env ps
 
       - name: Cleanup
         run: docker image prune -f
