@@ -21,17 +21,41 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+    
+  airflow-init:
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
+    container_name: airflow-init
+    depends_on:
+      - postgres
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      # Estas variables le dicen a la imagen oficial que inicialice la DB y cree el admin
+      - _AIRFLOW_DB_UPGRADE=true
+      - _AIRFLOW_WWW_USER_CREATE=true
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin
+      - _AIRFLOW_WWW_USER_EMAIL=admin@botcito.com
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+    # Este contenedor corre, hace la magia y se apaga solo
+    command: version 
 
   airflow-webserver:
     build:
       context: .
       dockerfile: docker/airflow/Dockerfile
     container_name: airflow-webserver
+    # Importante: ahora depende de que el INIT termine con éxito
     depends_on:
-      - postgres
+      airflow-init:
+        condition: service_completed_successfully
     ports:
       - "8080:8080"
-    environment:
+    environment: &airflow_common_env
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW_FERNET_KEY}
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -43,7 +67,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ./src:/opt/airflow/plugins/src # <--- Importarás como: from src.bot_core...
+      - ./src:/opt/airflow/plugins/src
     command: webserver
 
   airflow-scheduler:
@@ -52,15 +76,9 @@ services:
       dockerfile: docker/airflow/Dockerfile
     container_name: airflow-scheduler
     depends_on:
-      - postgres
-    environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW_FERNET_KEY}
-      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
-      - MINIO_ENDPOINT=http://storage-minio:9000
-      - MINIO_USER=${MINIO_ADMIN_USER}
-      - MINIO_PASSWORD=${MINIO_ADMIN_PASSWORD}
-      - PYTHONPATH=/opt/airflow/plugins
+      airflow-init:
+        condition: service_completed_successfully
+    environment: *airflow_common_env
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
