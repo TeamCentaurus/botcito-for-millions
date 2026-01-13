@@ -1,5 +1,5 @@
 # Base oficial de Airflow
-FROM apache/airflow:2.8.1-python3.10
+FROM apache/airflow:2.10.2-python3.12
 
 USER root
 
