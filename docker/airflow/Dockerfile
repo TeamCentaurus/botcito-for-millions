@@ -14,11 +14,11 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 # Configurar Java Home
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
-USER airflow
-
 # Copiamos los archivos de dependencias
 COPY pyproject.toml uv.lock ./
 
 # Instalamos las librerías usando uv
 # Nota: Instalamos en el sistema (no venv) porque Airflow ya maneja su entorno
 RUN uv pip install --system --no-cache -r pyproject.toml
+
+USER airflow
