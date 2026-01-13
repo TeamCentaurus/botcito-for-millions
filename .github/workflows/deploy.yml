@@ -39,24 +39,28 @@ jobs:
         run: |
           cd /opt/botcito
           
-          # 1. ¿Es la primera vez? 
-          # Buscamos si existen contenedores que tengan el nombre de tu proyecto
-          # 'docker compose ps' a veces falla en scripts si no hay nada, así que usamos un filtro de docker
-          RUNNING_CONTAINERS=$(docker ps -a --filter "label=com.docker.compose.project=botcito" -q)
+          # 1. Detectar si hay contenedores del proyecto corriendo
+          # Usamos sudo para evitar cualquier restricción del socket de docker
+          RUNNING_CONTAINERS=$(sudo docker ps -a --filter "label=com.docker.compose.project=botcito" -q)
           
-          # 2. ¿Hubo cambios en archivos base?
+          # 2. Detectar cambios críticos comparando con el commit anterior
           CRITICAL_CHANGES=$(git diff --name-only HEAD^ HEAD | grep -E 'docker/|src/|pyproject.toml|uv.lock|docker-compose.yml' || true)
           
           if [ -z "$RUNNING_CONTAINERS" ]; then
-            echo "PRIMER LEVANTAMIENTO: No se encontraron contenedores previos."
-            docker compose up -d --build
+            echo "ESTADO: No hay contenedores. Iniciando primer levantamiento..."
+            sudo docker-compose up -d --build
           elif [ -n "$CRITICAL_CHANGES" ]; then
-            echo "CAMBIOS CRÍTICOS DETECTADOS: Reconstruyendo imágenes..."
-            docker compose up -d --build
+            echo "ESTADO: Cambios críticos detectados. Reconstruyendo imágenes..."
+            sudo docker-compose up -d --build
           else
-            echo "CAMBIOS MENORES: Refrescando configuración si aplica..."
-            docker compose up -d
+            echo "ESTADO: Cambios menores (DAGs/Configs). Actualizando sin rebuild..."
+            # Docker-compose es inteligente: si no hay cambios en el .yml, no hará nada.
+            sudo docker-compose up -d
           fi
+
+      - name: Verify Deployment
+        run: |
+          sudo docker-compose ps
 
       - name: Cleanup
         run: docker image prune -f
