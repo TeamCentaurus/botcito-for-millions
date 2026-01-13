@@ -34,6 +34,12 @@ jobs:
           echo "Ajustando permisos de grupo..."
           sudo chown -R :botcito-devs .
           sudo chmod -R 775 .
+          
+      - name: Fix Permissions for Airflow
+        run: |
+          cd /opt/botcito
+          sudo chown -R 50000:0 logs dags plugins src
+          sudo chmod -R 775 logs dags plugins src
 
       - name: Analyze Changes and Deploy
         run: |
