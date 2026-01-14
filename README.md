@@ -92,3 +92,9 @@ nano .env
 sudo chown :botcito-devs .env
 sudo chmod 660 .env
 ```
+3- Ver la UI de airflow ejecutar lo siguiente en el powershell de windows
+``` bash
+gcloud compute start-iap-tunnel airflow-server-prod-vm-02 8080 `
+     --local-host-port=localhost:8080 `
+     --zone=us-central1-a
+```
