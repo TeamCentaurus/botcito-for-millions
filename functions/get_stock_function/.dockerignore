@@ -1,0 +1,14 @@
+# Ignorar documentación en la imagen final
+README.md
+docs/
+
+# Ignorar archivos de Python innecesarios
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.env
+
+# Ignorar archivos de sistema
+.DS_Store
+.git/
