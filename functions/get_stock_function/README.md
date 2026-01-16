@@ -41,6 +41,19 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:terraform-runner@$PROJECT_ID.iam.gserviceaccount.com" \
     --role="roles/iam.serviceAccountUser"
+
+# 1. Permiso para crear Cuentas de Servicio (Error 1)
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:terraform-runner@$PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/iam.serviceAccountAdmin"
+# 2. Permiso para crear Tópicos de Pub/Sub (Error 2)
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:terraform-runner@$PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/pubsub.admin"
+# 3. Permiso para crear Repositorios en Artifact Registry (Error 3)
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:terraform-runner@$PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/artifactregistry.admin"
 ```
 1- Creamos una cuenta de servicio para cloud function (terraform)
 2- Asignamos los siguientes roles: (terraform)
