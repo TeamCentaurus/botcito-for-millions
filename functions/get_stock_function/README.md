@@ -54,6 +54,10 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:terraform-runner@$PROJECT_ID.iam.gserviceaccount.com" \
     --role="roles/artifactregistry.admin"
+    
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:terraform-runner@$PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/cloudscheduler.admin"
 ```
 1- Creamos una cuenta de servicio para cloud function (terraform)
 2- Asignamos los siguientes roles: (terraform)

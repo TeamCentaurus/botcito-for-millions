@@ -1,0 +1,69 @@
+name: Deploy Cloud Function (WIF)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'main.py'
+      - 'tickers.json'
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - '.dockerignore'
+
+env:
+  REGION: us-central1
+  REPO_NAME: stock-functions-repo
+  IMAGE_NAME: stock-processor
+  TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Permisos necesarios para interactuar con el token de OIDC de GitHub
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Autenticación mediante Workload Identity Federation (IAP/WIF)
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: google-github-actions/auth@v2.0.0  
+        with:
+          workload_identity_provider: ${{ secrets.IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
+      # Configurar gcloud y Docker
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Docker Auth'
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      # Construir y subir la imagen
+      - name: Build and Push Container
+        run: |
+          IMAGE_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.TF_VAR_project_id }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          docker build -t $IMAGE_URL .
+          docker push $IMAGE_URL
+          echo "IMAGE_URL=$IMAGE_URL" >> $GITHUB_ENV
+
+      # Desplegar la función (Gen 2)
+      # - name: Deploy to Cloud Functions
+      #   run: |
+      #     gcloud functions deploy handle-stock-request \
+      #       --gen2 \
+      #       --runtime=python311 \
+      #       --region=${{ env.REGION }} \
+      #       --entry-point=handle_stock_request \
+      #       --source=. \
+      #       --trigger-topic=stock-request-topic \
+      #       --image=${{ env.IMAGE_URL }} \
+      #       --service-account=stock-processor-sa@${{ env.TF_VAR_project_id }}.iam.gserviceaccount.com \
+      #       --set-env-vars BUCKET_NAME=${{ env.TF_VAR_project_id }}-gcs02-github-terraform-state-bucket,TWELVEDATA_API_KEY=${{ secrets.TWELVEDATA_API_KEY }} \
+      #       --retry \
+      #       --max-instances=1
