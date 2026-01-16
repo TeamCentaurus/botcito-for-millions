@@ -2,7 +2,7 @@ name: Deploy Cloud Function (WIF)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
     paths:
       - 'main.py'
       - 'tickers.json'
