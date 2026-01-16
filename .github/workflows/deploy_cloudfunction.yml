@@ -1,9 +1,8 @@
-name: Deploy Cloud Function (WIF)
+name: Deploy Cloud Function
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
     paths:
       - main.py
       - tickers.json
@@ -48,19 +47,3 @@ jobs:
           docker build -t $IMAGE_URL .
           docker push $IMAGE_URL
           echo "IMAGE_URL=$IMAGE_URL" >> $GITHUB_ENV
-
-      # Desplegar la función (Gen 2)
-      # - name: Deploy to Cloud Functions
-      #   run: |
-      #     gcloud functions deploy handle-stock-request \
-      #       --gen2 \
-      #       --runtime=python311 \
-      #       --region=${{ env.REGION }} \
-      #       --entry-point=handle_stock_request \
-      #       --source=. \
-      #       --trigger-topic=stock-request-topic \
-      #       --image=${{ env.IMAGE_URL }} \
-      #       --service-account=stock-processor-sa@${{ env.TF_VAR_project_id }}.iam.gserviceaccount.com \
-      #       --set-env-vars BUCKET_NAME=${{ env.TF_VAR_project_id }}-gcs02-github-terraform-state-bucket,TWELVEDATA_API_KEY=${{ secrets.TWELVEDATA_API_KEY }} \
-      #       --retry \
-      #       --max-instances=1
