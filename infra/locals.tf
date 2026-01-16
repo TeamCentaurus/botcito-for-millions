@@ -17,12 +17,5 @@ locals {
 
   default_service_account_email = "${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 
-  ## cloud function
-  service_account_roles = [
-    "roles/logging.logWriter",      # Escribir logs
-    "roles/pubsub.subscriber",      # Ser activada por Pub/Sub
-    "roles/storage.objectCreator",  # Escribir archivos en el Bucket
-    "roles/artifactregistry.reader" # Lectura de imagen Docker (necesario para Cloud Functions v2)
-  ]
 }
 
