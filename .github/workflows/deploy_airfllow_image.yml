@@ -65,4 +65,4 @@ jobs:
           sudo docker-compose --env-file .env ps
 
       - name: Cleanup
-        run: docker image prune -f
+        run: sudo docker image prune -f
