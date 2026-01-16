@@ -69,5 +69,8 @@ jobs:
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
         cd infra
-        terraform apply -auto-approve -input=false
+        terraform apply \
+        -replace=google_compute_instance.instance-vm \
+        -auto-approve \
+        -input=false
 
