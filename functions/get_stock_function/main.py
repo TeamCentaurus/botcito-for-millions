@@ -4,7 +4,7 @@ import json
 import os
 from google.cloud import storage
 from twelvedata import TDClient
-from datetime import datetime
+from datetime import datetime, UTC
 
 BUCKET_NAME = os.environ.get('BUCKET_NAME')
 
@@ -19,11 +19,10 @@ def save_to_gcs(df: pd.DataFrame) -> str:
     """Guarda el DataFrame en Google Cloud Storage en formato parquet."""
     if not BUCKET_NAME:
         raise ValueError("BUCKET_NAME environment variable is not set.")
-    
     client = storage.Client()
     bucket = client.bucket(BUCKET_NAME)
 
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     folder = now.strftime('%Y-%m-%d')
     timestamp = now.strftime('%H%M%S')
     blob_path = f'botcito/stocks/{folder}/{timestamp}.parquet'
@@ -58,8 +57,7 @@ def handle_stock_request(cloud_event):
             timezone="UTC",
         )
 
-        df = ts.as_pandas()  
-
+        df = ts.as_pandas()
         if df.empty:
             print("DataFrame is empty, nothing to save.")
             return
@@ -69,9 +67,13 @@ def handle_stock_request(cloud_event):
         if 'level_1' in df.columns:
             df.rename(columns={'level_1': 'datetime', 'level_0': 'ticker'}, inplace=True)
         else:
-            df.insert(0, 'ticker', tickers)
+            df.insert(0, 'ticker', tickers)  
 
-        df['ingested_at'] = datetime.utcnow()
+        now = datetime.now(UTC)
+        if format(pd.to_datetime(df['datetime'][0]), "%Y-%m-%d") != now.strftime('%Y-%m-%d'):
+            print("DataFrame don't contain today's data, aborting save.")
+            return
+        df['ingested_at'] = now
 
         gcs_path = save_to_gcs(df)
         print(f"Data saved to {gcs_path}")

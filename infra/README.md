@@ -56,7 +56,7 @@ gcloud iam workload-identity-pools providers create-oidc "github-terraform-provi
 # Obtener el ID completo del Pool
 export POOL_ID=$(gcloud iam workload-identity-pools describe "github-terraform-pool" --location="global" --format="value(name)")
 
-# Dar permiso de impersonación (reemplaza los datos en < >)
+# Dar permiso de impersonación
 gcloud iam service-accounts add-iam-policy-binding "terraform-runner@${PROJECT_ID}.iam.gserviceaccount.com" \
     --project="${PROJECT_ID}" \
     --role="roles/iam.workloadIdentityUser" \
