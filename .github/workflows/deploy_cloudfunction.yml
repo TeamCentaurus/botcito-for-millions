@@ -2,13 +2,14 @@ name: Deploy Cloud Function (WIF)
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
     paths:
-      - 'main.py'
-      - 'tickers.json'
-      - 'Dockerfile'
-      - 'requirements.txt'
-      - '.dockerignore'
+      - main.py
+      - tickers.json
+      - Dockerfile
+      - requirements.txt
+      - .dockerignore
 
 env:
   REGION: us-central1
@@ -19,32 +20,28 @@ env:
 jobs:
   deploy_function:
     runs-on: ubuntu-latest
-    # Permisos necesarios para interactuar con el token de OIDC de GitHub
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Autenticación mediante Workload Identity Federation (IAP/WIF)
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: google-github-actions/auth@v2.0.0  
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
-      # Configurar gcloud y Docker
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v2'
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
-      - name: 'Docker Auth'
+      - name: Docker Auth
         run: |
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
-      # Construir y subir la imagen
       - name: Build and Push Container
         run: |
           IMAGE_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.TF_VAR_project_id }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
