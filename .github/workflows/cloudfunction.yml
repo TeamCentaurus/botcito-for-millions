@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - "main"
-    paths:
-      - 'functions/get_stock_function/**'
 
 env:
   REGION: us-central1
