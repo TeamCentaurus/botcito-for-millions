@@ -42,7 +42,7 @@ resource "google_compute_instance" "instance-vm" {
   }
 
   service_account {
-    email  = local.default_service_account_email # var.service_account_email
+    email  = local.default_service_account_email
     scopes = ["cloud-platform"]
   }
 

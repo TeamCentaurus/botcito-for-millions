@@ -40,8 +40,6 @@ jobs:
       with:
         workload_identity_provider: ${{ secrets.IDENTITY_PROVIDER }}
         service_account: ${{ secrets.SERVICE_ACCOUNT }}
-
-
           
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
