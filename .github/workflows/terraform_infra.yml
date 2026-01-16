@@ -68,7 +68,7 @@ jobs:
       run: |
         cd infra
         terraform apply \
-        -replace=google_compute_instance.instance-vm \
+        # -replace=google_compute_instance.instance-vm \
         -auto-approve \
         -input=false
 
