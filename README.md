@@ -51,30 +51,38 @@ ssh-keygen -t ed25519 -C "vm-deploy-key"
 # Copiamos la llave pública
 cat ~/.ssh/id_ed25519.pub
 
-# En el repo: Settings -> Deploy keys -> Add deploy key -> pegar llave pública
+# En el repo: Settings -> Deploy keys -> Add deploy key -> SSH_KEY_VM_02: pegar llave pública
 
 # Clonamos el repositorio en la carpeta previamennte creada con el script de inicializacion de terraform
-cd opt/
+cd /opt/
 sudo git clone https://github.com/TeamCentaurus/botcito-for-millions.git botcito
 
-# Creamos y añadimos a los miembros al grupo para editar sin errores de "Permission Denied"
-sudo groupadd botcito-devs
+# 1️⃣ Crear grupo (solo si no existe)
+sudo groupadd botcito-devs 2>/dev/null || true
+# 2️⃣ Agregar usuarios al grupo botcito-devs
 sudo usermod -aG botcito-devs $USER
 sudo usermod -aG botcito-devs leonel.aliaga 
-# Agregamos al grupo de docker
+# 3️⃣ Agregar usuarios al grupo docker
 sudo usermod -aG docker $USER
 sudo usermod -aG docker leonel.aliaga
-# Hacemos que la carpeta sea propiedad del grupo
+# 4️⃣ Asignar grupo y permisos al proyecto
 sudo chown -R :botcito-devs /opt/botcito
 sudo chmod -R 775 /opt/botcito
-# Cambiamos el grupo primario de la sesion en curso
+# 5️⃣ Aplicar grupo a la sesión actual
 newgrp botcito-devs
-# Declaramos la carpeta  como segura
+# 6️⃣ Marcar el repositorio como seguro para git
 git config --global --add safe.directory /opt/botcito
+# 7️⃣ Crear archivo .env
+cd /opt/botcito
+nano .env
+# 8️⃣ Asegurar permisos del archivo .env
+sudo chown :botcito-devs .env
+sudo chmod 660 .env
 
 # Settings -> Actions -> Runners -> New self-hosted runner
 # Seguimos las instrucciones de instalación
 # Después del ./run.sh ejecutamos lo siguiente para que el CI/CD se levante solo despues de un mantenimieto
+cd
 sudo ./svc.sh install
 sudo ./svc.sh start
 # Verificamos el estado
@@ -84,13 +92,7 @@ cd ~/actions-runner
 sudo ./svc.sh install
 sudo ./svc.sh start
 sudo ./svc.sh status
-
-# Creamos el archivo .env con las variables necesarias
-cd /opt/botcito
-nano .env
-# Agreganos al grupo dev
-sudo chown :botcito-devs .env
-sudo chmod 660 .env
+# levantamos el worflow para pull y up
 ```
 3- Ver la UI de airflow ejecutar lo siguiente en el powershell de windows
 ``` bash
