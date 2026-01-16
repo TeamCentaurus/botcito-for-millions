@@ -123,7 +123,6 @@ resource "google_cloud_scheduler_job" "stock_scheduler" {
   schedule         = "* 9-16 * * 1-5"
   time_zone        = "America/New_York" 
   attempt_deadline = "50s"
-  labels = local.common_labels
 
   pubsub_target {
     topic_name = google_pubsub_topic.stock_tick_topic.id
