@@ -16,7 +16,7 @@ def load_ticker_list() -> str:
 
 
 def save_to_gcs(df: pd.DataFrame) -> str:
-    """Guarda el DataFrame en Google Cloud Storage en formato parquet."""
+    """ Guarda el DataFrame en Google Cloud Storage en formato parquet. """
     if not BUCKET_NAME:
         raise ValueError("BUCKET_NAME environment variable is not set.")
     client = storage.Client()

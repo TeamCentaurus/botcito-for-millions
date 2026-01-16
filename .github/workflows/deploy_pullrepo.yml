@@ -8,10 +8,10 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  pull_up:
     if: >
-      github.event.workflow_run.conclusion == 'success' || 
-      (github.event_name == 'push' && github.event.workflow_run == null)
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     runs-on: self-hosted
     
     steps:
