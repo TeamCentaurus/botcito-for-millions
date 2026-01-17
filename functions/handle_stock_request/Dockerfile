@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     libc6-dev \
+    libstdc++6 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
