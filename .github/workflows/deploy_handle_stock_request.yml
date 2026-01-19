@@ -1,0 +1,44 @@
+name: Deploy handle_stock_request Function
+on:
+  push: 
+    branches: [ "main" ]
+    paths:
+      - 'functions/handle_stock_request/**'
+jobs:
+  deploy-handle-stock-request:
+    runs-on: ubuntu-latest
+    environment: production
+
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - id: auth
+        uses: google-github-actions/auth@v2.0.0  
+        with:
+          workload_identity_provider: ${{ secrets.IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy handle_stock_request Function
+        run: |
+          cd functions/handle_stock_request
+          gcloud functions deploy handle-stock-request \
+            --gen2 \
+            --region=us-central1 \
+            --runtime=python311 \
+            --source=. \
+            --entry-point=handle_stock_request \
+            --trigger-topic=cron-stock-topic \
+            --service-account=function-stock-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+            --set-env-vars=BUCKET_NAME=${PROJECT_ID}-gcs02-github-terraform-state-bucket,TWELVEDATA_API_KEY=${{ secrets.TWELVEDATA_API_KEY }} \
+            --memory=1024Mi \
+            --timeout=50s
