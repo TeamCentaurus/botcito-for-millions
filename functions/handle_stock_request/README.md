@@ -97,8 +97,8 @@ export FUNCTION_NAME=handle-stock-request
 export TOPIC=cron-stock-topic
 export SERVICE_ACCOUNT=function-stock-sa@$PROJECT_ID.iam.gserviceaccount.com
 export BUCKET_NAME=$PROJECT_ID-gcs02-github-terraform-state-bucket
-# SHELL
-git clone https://github.com/tu-org/tu-repo.git
+export TWELVEDATA_API_KEY=""
+echo $PROJECT_ID
 # AMBOS
 cd functions/handle_stock_request
 gcloud functions deploy $FUNCTION_NAME \
@@ -109,9 +109,17 @@ gcloud functions deploy $FUNCTION_NAME \
   --entry-point=handle_stock_request \
   --trigger-topic=$TOPIC \
   --service-account=$SERVICE_ACCOUNT \
-  --set-env-vars=BUCKET_NAME=$BUCKET_NAME,TWELVEDATA_API_KEY=TU_API_KEY \
+  --set-env-vars=BUCKET_NAME=$BUCKET_NAME,TWELVEDATA_API_KEY=$TWELVEDATA_API_KEY \
   --memory=1024Mi \
   --timeout=50s
+
+# test
+gcloud pubsub topics publish cron-stock-topic \
+  --message='{"source":"manual-test","reason":"function-test"}'
+
+gcloud logs read \
+  "resource.type=cloud_function AND resource.labels.function_name=$FUNCTION_NAME" \
+  --limit=50
 
 ```
 

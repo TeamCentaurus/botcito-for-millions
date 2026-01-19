@@ -64,8 +64,6 @@ def handle_stock_request(cloud_event):
         if df.empty:
             logging.warning(f"Event {event_id}: DataFrame empty.")
             return
-        
-        df = df.reset_index()
 
         if isinstance(df.index, pd.MultiIndex):
             df = df.reset_index()

@@ -1,4 +1,3 @@
 {
-  "tickers": ["AAPL", "MSFT", "TSLA", "GOOGL", "AMZN", "NVDA", "META", "AMZN", "IBM", "ADBE",
-    "PSTG", "AMD", "INTC", "PLTR", "PINS", "XOM", "GOOG", "NFLX", "ASML", "LLY", "CVX", "ORCL"]
+  "tickers": ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "AMD", "INTC"]
 }
