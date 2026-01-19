@@ -75,13 +75,13 @@ def handle_stock_request(cloud_event):
             df = df.reset_index()
             df.insert(0, 'ticker', tickers)  
         
-        df["datetime"] = pd.to_datetime(df["datetime"], utc=True)
-        ny_tz = pytz.timezone('America/New_York')
-        today_ny = datetime.now(ny_tz).date()
-        df_ny_dates = df["datetime"].dt.tz_convert('America/New_York').dt.date
-        if not (df_ny_dates == today_ny).all():
-            print(f"El dato no pertenece a hoy ({today_ny}), es data antigua. Abortando guardado.")
-            return
+        # df["datetime"] = pd.to_datetime(df["datetime"], utc=True)
+        # ny_tz = pytz.timezone('America/New_York')
+        # today_ny = datetime.now(ny_tz).date()
+        # df_ny_dates = df["datetime"].dt.tz_convert('America/New_York').dt.date
+        # if not (df_ny_dates == today_ny).all():
+        #     print(f"El dato no pertenece a hoy ({today_ny}), es data antigua. Abortando guardado.")
+        #     return
         
         now = datetime.now(UTC)
         df['ingested_at'] = now
