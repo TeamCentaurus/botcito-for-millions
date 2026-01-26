@@ -96,8 +96,28 @@ sudo ./svc.sh status
 ```
 3- Ver la UI de airflow ejecutar lo siguiente en el powershell de windows
 ``` bash
+# powershell
 gcloud compute start-iap-tunnel airflow-server-prod-vm-02 8080 `
      --local-host-port=localhost:8080 `
      --zone=us-central1-a
+gcloud compute start-iap-tunnel airflow-server-prod-vm-02 9001 `
+     --local-host-port=localhost:9001 `
+     --zone=us-central1-a
+gcloud compute start-iap-tunnel airflow-server-prod-vm-02 9000 `
+     --local-host-port=localhost:9000 `
+     --zone=us-central1-a
+# vsc
+gcloud compute start-iap-tunnel airflow-server-prod-vm-02 9001 \
+    --local-host-port=localhost:9001 \
+    --zone=us-central1-a
+gcloud compute start-iap-tunnel airflow-server-prod-vm-02 8080 \
+    --local-host-port=localhost:8080 \
+    --zone=us-central1-a
+gcloud compute start-iap-tunnel airflow-server-prod-vm-02 9000 \
+    --local-host-port=localhost:9000 \
+    --zone=us-central1-a
+# o ambos túneles al mismo tiempo
+gcloud compute start-iap-tunnel airflow-server-prod-vm-02 8080 --local-host-port=localhost:8080 --zone=us-central1-a & \
+gcloud compute start-iap-tunnel airflow-server-prod-vm-02 9001 --local-host-port=localhost:9001 --zone=us-central1-a &
 ```
 # dsdsd
