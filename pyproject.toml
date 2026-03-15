@@ -11,8 +11,10 @@ authors = [
     ]
 
 dependencies = [
+    "joblib>=1.5.3",
     "numpy>=2.3.5",
     "pandas>=2.3.3",
+    "pykalman>=0.11.2",
     "pyspark>=4.0.1",
     "requests>=2.32.5",
     "statsmodels>=0.14.6",
@@ -25,3 +27,10 @@ dev = [
     "jupyter>=1.1.1",
     "matplotlib>=3.10.8",
 ]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
