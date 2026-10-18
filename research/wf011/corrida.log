@@ -1,0 +1,11 @@
+retornos (3216, 96), 2014-01-03 → 2026-10-16
+principal listo (100s)
+variante K=5 train=None (127s)
+variante K=5 train=504 (151s)
+variante K=1 train=252 (177s)
+variante K=3 train=252 (202s)
+variante K=10 train=252 (228s)
+variante K=15 train=504 (251s)
+robustez lista (372s)
+potencia lista (529s)
+→ /home/leonel-unix/workspace/botcito-for-millions/research/wf011/resultado.json

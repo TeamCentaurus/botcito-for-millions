@@ -26,6 +26,11 @@ dependencies = [
 dev = [
     "jupyter>=1.1.1",
     "matplotlib>=3.10.8",
+    "plotly>=7.1.0",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.0",
+    "streamlit>=1.65.0",
 ]
 
 [build-system]
@@ -34,3 +39,21 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
+markers = [
+    "spec: test que cierra un criterio de aceptación de un spec (docs/specs/)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["botcito_core", "synthetic"]

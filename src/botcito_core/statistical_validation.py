@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from itertools import combinations
+from statsmodels.stats.multitest import multipletests
 from statsmodels.tsa.stattools import coint, adfuller
 from statsmodels.regression.linear_model import OLS
 from statsmodels.tools import add_constant
@@ -132,8 +133,14 @@ def screen_pair(prices: pd.DataFrame,
                 ticker_b: str,
                 hedge_method: str = "ols") -> dict:
     """
-    Ejecuta todos los tests estadísticos para un par.
-    Devuelve un resumen de validez.
+    Diagnósticos de UN par: cointegración, hedge ratio, estacionariedad y half-life.
+
+    NO emite veredicto de validez. Decidir si un par es válido requiere saber cuántos
+    pares más se probaron: con N tickers se evalúan C(N,2) pares y a alpha=0.05 el 5%
+    pasa por azar. Para el veredicto, usar `screen_universe`.
+
+    `cumple_filtros_locales` es lo único decidible mirando un solo par: estacionariedad
+    del spread y half-life en rango.
     """
     p_a = prices[ticker_a].dropna()
     p_b = prices[ticker_b].dropna()
@@ -156,18 +163,66 @@ def screen_pair(prices: pd.DataFrame,
     # 5. Half-life
     hl = compute_half_life(spread)
 
-    # Veredicto final
-    es_valido = (
-        coint_result["cointegrado"] and
+    # Filtros que sí son decidibles por par, sin conocer el universo
+    cumple_filtros_locales = bool(
         adf_result["estacionario"] and
         1 < hl < 60  # Ajustar según tu frecuencia de datos
     )
 
     return {
         "par": f"{ticker_a}/{ticker_b}",
-        "valido": es_valido,
+        "cumple_filtros_locales": cumple_filtros_locales,
         "cointegracion": coint_result,
         "estacionariedad": adf_result,
         "half_life_dias": hl,
         "hedge_ratio": round(hedge_ratio, 4),
     }
+
+
+def screen_universe(prices: pd.DataFrame,
+                    pairs: list[tuple[str, str]],
+                    alpha: float = 0.05,
+                    hedge_method: str = "ols") -> list[dict]:
+    """
+    Barre `pairs`, corrige los p-values de cointegración por multiple testing y emite
+    el veredicto `valido` por par.
+
+    Usa Benjamini-Hochberg (control de FDR) sobre la lista completa de p-values.
+    BH y no Bonferroni porque la pregunta de un screening no es "¿cometí algún falso
+    positivo?" sino "¿qué fracción de los pares que acepto espero que sea basura?".
+
+    El costo es real y hay que conocerlo: con m tests, el p-value del primer puesto
+    del ranking tiene que ser <= alpha/m. Con 500 pares eso es 1e-4, así que un par
+    genuinamente cointegrado con p=0.001 no pasa. Es el argumento a favor de reducir
+    el universo antes de testear (clustering por sector), no de aflojar la corrección.
+
+    Devuelve un dict por par, en el mismo orden que `pairs`, con las claves de
+    `screen_pair` más: `p_value_corregido`, `rechaza_h0_fdr`, `valido` y
+    `n_pares_probados`.
+    """
+    if not pairs:
+        raise ValueError("pairs está vacío: no hay nada que barrer")
+
+    if not 0 < alpha < 1:
+        raise ValueError(f"alpha debe estar en (0, 1), recibido: {alpha}")
+
+    disponibles = set(prices.columns)
+    faltantes = sorted({t for par in pairs for t in par} - disponibles)
+    if faltantes:
+        raise ValueError(f"tickers ausentes en prices: {faltantes}")
+
+    resultados = [
+        screen_pair(prices, ticker_a, ticker_b, hedge_method=hedge_method)
+        for ticker_a, ticker_b in pairs
+    ]
+
+    p_values = [r["cointegracion"]["p_value"] for r in resultados]
+    rechaza, corregidos, _, _ = multipletests(p_values, alpha=alpha, method="fdr_bh")
+
+    for resultado, p_corregido, rechaza_h0 in zip(resultados, corregidos, rechaza):
+        resultado["p_value_corregido"] = float(p_corregido)
+        resultado["rechaza_h0_fdr"] = bool(rechaza_h0)
+        resultado["valido"] = bool(rechaza_h0 and resultado["cumple_filtros_locales"])
+        resultado["n_pares_probados"] = len(pairs)
+
+    return resultados

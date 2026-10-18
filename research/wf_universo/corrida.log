@@ -1,0 +1,10 @@
+retornos (3071, 455) 2014-08-01 → 2026-10-16
+H1 PCA K=15 · train 252 d: pasa=False (506s)
+H2 ETF sectorial · train 252 d: pasa=False (957s)
+PCA K=5 · train 252 d (1038s)
+ETF sectorial + SPY · train 252 d (1125s)
+PCA K=15 · train expansiva (1207s)
+ETF sectorial · train expansiva (1294s)
+Universo 96 · ETF sectorial · train 252 d (1307s)
+potencia (1309s)
+→ /home/leonel-unix/workspace/botcito-for-millions/research/wf_universo/resultado.json
